@@ -1,0 +1,108 @@
+package StatisticiRapoarte;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import Controller.ServerCommunication;
+import Model.*;
+
+
+public class GenerareRapoarte {
+	private ServerCommunication serverCommunication = new ServerCommunication();
+	
+	public void salvareRaportCSV() {
+		List<Institutie> institutii = new ArrayList<Institutie>();
+		try {
+			institutii = serverCommunication.getAllInstitutii();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try (PrintWriter writer = new PrintWriter(new File("rapoarte.csv"))) {
+			for (Institutie i : institutii) {
+				for (OperaDeArtaPlastica o : i.getOpereDeArta()) {
+					StringBuilder sb = new StringBuilder();
+					sb.append(o.getTitlu());
+					sb.append('.');
+					sb.append(" artist: " + o.getNumeArtist());
+					sb.append('.');
+					sb.append(" anul realizarii: " + o.getAnulRealizarii());
+					sb.append("\n");
+
+					writer.write(sb.toString());
+				}
+			}
+
+		} catch (FileNotFoundException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	public void salvareRaportXML() {
+		List<Institutie> institutii = new ArrayList<Institutie>();
+		try {
+			institutii = serverCommunication.getAllInstitutii();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db;
+		try {
+			db = dbf.newDocumentBuilder();
+			Document doc = db.newDocument();
+
+			Element root = doc.createElement("Rapoarte");
+			doc.appendChild(root);
+
+			for (Institutie i : institutii) {
+				for (OperaDeArtaPlastica o : i.getOpereDeArta()) {
+					root.appendChild(getOpera(doc, o));
+				}
+			}
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			DOMSource source = new DOMSource(doc);
+
+			StreamResult console = new StreamResult(System.out);
+			StreamResult file = new StreamResult(new File("rapoarte.xml"));
+
+			transformer.transform(source, console);
+			transformer.transform(source, file);
+			System.out.println("DONE");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static Node getOpera(Document doc, OperaDeArtaPlastica opera) {
+		Element o = doc.createElement("Opera");
+
+		o.setAttribute("Titlu", opera.getTitlu());
+		o.appendChild(getElements(doc, o, "Artist", opera.getNumeArtist()));
+		o.appendChild(getElements(doc, o, "AnRealizare", String.valueOf(opera.getAnulRealizarii())));
+		return o;
+	}
+
+	private static Node getElements(Document doc, Element element, String name, String value) {
+		Element node = doc.createElement(name);
+		node.appendChild(doc.createTextNode(value));
+		return node;
+	}
+}

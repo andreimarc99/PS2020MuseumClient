@@ -1,0 +1,242 @@
+package Controller;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JOptionPane;
+
+import Model.Angajat;
+import Model.Institutie;
+import Model.OperaDeArtaPlastica;
+import StatisticiRapoarte.Filtrare;
+import StatisticiRapoarte.Statistici;
+import Model.User;
+import View.AdminPage;
+import View.LoginPage;
+
+public class AdminPageActionListeners {
+	private ServerCommunication serverCommunication = new ServerCommunication();
+
+	public void addActionListeners(final AdminPage adminPage) {
+
+		adminPage.getBtnFiltrareDupaInstitutie().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				List<OperaDeArtaPlastica> opere = new Filtrare().filtrareDupaInstitutie(adminPage.getInstitutiiComboBox());
+				adminPage.getOpereDeArtaTextArea().setText("");
+				for (OperaDeArtaPlastica o : opere) {
+					adminPage.appendOpereDeArta(o.toString() + "\n");
+				}
+			}
+		});
+
+		adminPage.getBtnFiltrareDupaArtist().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				List<OperaDeArtaPlastica> opere = new Filtrare().filtrareDupaArtist(adminPage.getArtistiComboBox());
+				adminPage.getOpereDeArtaTextArea().setText("");
+				for (OperaDeArtaPlastica entry : opere) {
+					adminPage.appendOpereDeArta(entry.toString() + "\n");
+				}
+			}
+		});
+
+		adminPage.getBtnExit().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+
+		adminPage.getBtnBack().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				adminPage.getFrame().setVisible(false);
+				new LoginPage().getFrame().setVisible(true);
+			}
+		});
+
+		adminPage.getBtnFiltrareDupaTipulOperei().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				List<OperaDeArtaPlastica> opere = new Filtrare().filtrareDupaTipulOperei(adminPage.getTipulOpereiComboBox());
+				adminPage.getOpereDeArtaTextArea().setText("");
+				for (OperaDeArtaPlastica o : opere) {
+					adminPage.appendOpereDeArta(o.toString() + "\n");
+				}
+			}
+		});
+
+		adminPage.getBtnCautare().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				List<Institutie> institutii = new ArrayList<Institutie>();
+				try {
+					institutii = serverCommunication.getAllInstitutii();
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				if (!adminPage.getCautareOperaText().isEmpty()) {
+					boolean ok = false;
+					for (Institutie i : institutii) {
+						for (OperaDeArtaPlastica o : i.getOpereDeArta()) {
+							if (o.getTitlu().equals(adminPage.getCautareOperaText())) {
+								JOptionPane.showMessageDialog(null, o.toString());
+								ok = true;
+							}
+						}
+					}
+					if (!ok) {
+						JOptionPane.showMessageDialog(null, "Nu exista opera cu titlul dat.");
+					}
+				}
+			}
+		});
+
+		adminPage.getBtnStatistici().addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				new Statistici().generareStatistici();
+			}
+		});
+
+		adminPage.getBtnCreareAngajatNou().addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String nume = new String();
+				String parola = new String();
+			
+				nume = JOptionPane.showInputDialog(null, "Introduceti numele angajatului");
+				if (!nume.isEmpty()) {
+					parola = JOptionPane.showInputDialog(null, "Introduceti parola angajatului");
+					if (!parola.isEmpty()) {
+						List<User> users = new ArrayList<User>();
+						try {
+							serverCommunication.createUser(new Angajat(nume, parola));
+							adminPage.getComboBox().removeAllItems();
+							users = serverCommunication.getAllUsers();
+							
+							for (User user : users) {
+								if (user instanceof Angajat)
+									adminPage.getComboBox().addItem(user.toString());
+							}
+
+							adminPage.getAngajatiTextArea().setText("");
+							for (User user : users) {
+								adminPage.appendAngajatiTextArea(user.toString());
+							}
+						} catch (ClassNotFoundException e1) {
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					} else {
+						JOptionPane.showMessageDialog(null, "Nu ati introdus o parola");
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "Nu ati introdus un nume");
+				}
+			}
+		});
+
+		adminPage.getBtnStergereAngajat().addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				List<User> users = new ArrayList<User>();
+				try {
+					users = serverCommunication.getAllUsers();
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				String angajat = adminPage.getAngajatiComboBox();
+				for (int i = 0; i < users.size(); ++i) {
+					User u = users.get(i);
+					if (u.toString().equals(angajat)) {
+						try {
+							serverCommunication.deleteUser(u);
+							users = serverCommunication.getAllUsers();
+
+							adminPage.getComboBox().removeAllItems();
+
+							for (User user : users) {
+								if (user instanceof Angajat)
+									adminPage.getComboBox().addItem(user.toString());
+							}
+							adminPage.getAngajatiTextArea().setText("");
+							for (User user : users) {
+								adminPage.appendAngajatiTextArea(user.toString());
+							}
+						} catch (ClassNotFoundException e1) {
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+
+
+					}
+				}
+			}
+		});
+
+		adminPage.getBtnEditareAngajat().addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String angajat = adminPage.getAngajatiComboBox();
+				String nume = new String();
+				String parola = new String();
+				int index = 0;
+
+				List<User> users = new ArrayList<User>();
+				try {
+					users = serverCommunication.getAllUsers();
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+
+				for (int i = 0; i < users.size(); ++i) {
+					if (users.get(i).toString().equals(angajat)) {
+						index = i;
+					}
+				}
+
+				nume = JOptionPane.showInputDialog(null, "Introduceti noul nume");
+
+				if (!nume.isEmpty()) {
+					parola = JOptionPane.showInputDialog(null, "Introduceti noua parola");
+					if (!parola.isEmpty()) {
+						try {
+							serverCommunication.editUser(users.get(index), nume, parola);
+							
+							users = serverCommunication.getAllUsers();
+
+							JOptionPane.showMessageDialog(null, "S-a editat cu succes");
+
+							adminPage.getComboBox().removeAllItems();
+							for (User user : users) {
+								if (user instanceof Angajat)
+									adminPage.getComboBox().addItem(user.toString());
+							}
+							adminPage.getAngajatiTextArea().setText("");
+							for (User user : users) {
+								adminPage.appendAngajatiTextArea(user.toString());
+							}
+						} catch (ClassNotFoundException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+			}
+		});
+	}
+
+}

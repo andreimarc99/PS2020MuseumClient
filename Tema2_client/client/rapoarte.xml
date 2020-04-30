@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Rapoarte>
+    <Opera Titlu="Tablou 1">
+        <Artist>Ion Pop</Artist>
+        <AnRealizare>1967</AnRealizare>
+    </Opera>
+    <Opera Titlu="Tablou 3">
+        <Artist>Gabriela Popa</Artist>
+        <AnRealizare>2017</AnRealizare>
+    </Opera>
+    <Opera Titlu="Sculptura 1">
+        <Artist>Vasile Rusu</Artist>
+        <AnRealizare>1980</AnRealizare>
+    </Opera>
+    <Opera Titlu="Tablou 2">
+        <Artist>Vlad Tudor</Artist>
+        <AnRealizare>1987</AnRealizare>
+    </Opera>
+    <Opera Titlu="Tablou 4">
+        <Artist>Razvan Tudor</Artist>
+        <AnRealizare>2015</AnRealizare>
+    </Opera>
+    <Opera Titlu="Sculptura 2">
+        <Artist>Cristian Popescu</Artist>
+        <AnRealizare>1989</AnRealizare>
+    </Opera>
+    <Opera Titlu="Tablou gal 1">
+        <Artist>Rares Vlad</Artist>
+        <AnRealizare>1946</AnRealizare>
+    </Opera>
+    <Opera Titlu="Tablou gal 2">
+        <Artist>Roxana Danescu</Artist>
+        <AnRealizare>1999</AnRealizare>
+    </Opera>
+    <Opera Titlu="Coloana infinitului">
+        <Artist>Constantin Brancusi</Artist>
+        <AnRealizare>1820</AnRealizare>
+    </Opera>
+</Rapoarte>

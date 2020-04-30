@@ -1,0 +1,107 @@
+package Controller;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JOptionPane;
+
+import Model.*;
+import StatisticiRapoarte.Filtrare;
+import StatisticiRapoarte.Statistici;
+import View.*;
+
+public class VizitatorPageActionListeners {
+	private ServerCommunication serverCommunication = new ServerCommunication();
+
+	public void addActionListeners(final VizitatorPage vizitatorPage) {
+
+		vizitatorPage.getBtnFiltrareDupaInstitutie().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				List<OperaDeArtaPlastica> opere = new Filtrare()
+						.filtrareDupaInstitutie(vizitatorPage.getInstitutiiComboBox());
+				vizitatorPage.getOpereDeArtaTextArea().setText("");
+				for (OperaDeArtaPlastica o : opere) {
+					vizitatorPage.appendOpereDeArta(o.toString() + "\n");
+				}
+			}
+		});
+
+		vizitatorPage.getBtnFiltrareDupaArtist().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				List<OperaDeArtaPlastica> opere = new Filtrare().filtrareDupaArtist(vizitatorPage.getArtistiComboBox());
+				vizitatorPage.getOpereDeArtaTextArea().setText("");
+				for (OperaDeArtaPlastica entry : opere) {
+					vizitatorPage.appendOpereDeArta(entry.toString() + "\n");
+				}
+			}
+		});
+
+		vizitatorPage.getBtnExit().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					serverCommunication.exitServer();
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				System.exit(0);
+			}
+		});
+
+		vizitatorPage.getBtnBack().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				vizitatorPage.getFrame().setVisible(false);
+				new LoginPage().getFrame().setVisible(true);
+			}
+		});
+
+		vizitatorPage.getBtnFiltrareDupaTipulOperei().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				List<OperaDeArtaPlastica> opere = new Filtrare()
+						.filtrareDupaTipulOperei(vizitatorPage.getTipulOpereiComboBox());
+				vizitatorPage.getOpereDeArtaTextArea().setText("");
+				for (OperaDeArtaPlastica o : opere) {
+					vizitatorPage.appendOpereDeArta(o.toString() + "\n");
+				}
+			}
+		});
+
+		vizitatorPage.getBtnCautare().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				List<Institutie> institutii = new ArrayList<Institutie>();
+				try {
+					institutii = serverCommunication.getAllInstitutii();
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
+				if (!vizitatorPage.getCautareOperaText().isEmpty()) {
+					boolean ok = false;
+					for (Institutie i : institutii) {
+						for (OperaDeArtaPlastica o : i.getOpereDeArta()) {
+							if (o.getTitlu().equals(vizitatorPage.getCautareOperaText())) {
+								JOptionPane.showMessageDialog(null, o.toString());
+								ok = true;
+							}
+						}
+					}
+					if (!ok) {
+						JOptionPane.showMessageDialog(null, "Nu exista opera cu titlul dat.");
+					}
+				}
+			}
+		});
+
+		vizitatorPage.getBtnStatistici().addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				new Statistici().generareStatistici();
+			}
+		});
+	}
+}
